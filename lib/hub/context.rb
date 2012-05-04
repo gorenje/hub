@@ -248,6 +248,10 @@ module Hub
         URI("https://#{host}/api/v2/#{type}/#{resource}/#{action}")
       end
 
+      def api_issues_show_url(type, user)
+        api_url(type, 'issues', "list/#{user}/#{name}/open")
+      end
+
       def api_show_url(type)
         api_url(type, 'repos', "show/#{owner}/#{name}")
       end
@@ -469,7 +473,7 @@ module Hub
     end
 
     # Cross-platform web browser command; respects the value set in $BROWSER.
-    # 
+    #
     # Returns an array, e.g.: ['open']
     def browser_launcher
       browser = ENV['BROWSER'] || (

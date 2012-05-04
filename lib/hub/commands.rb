@@ -688,6 +688,58 @@ module Hub
     end
     alias_method "--help", :help
 
+    # $ hub github-issues -u <project owner>
+    #   1. some issue
+    #   2. another issue
+    # >
+    def github_issues(args)
+      user_arg = nil
+      while arg = args.shift
+        case arg
+        when '-u'
+          user_arg = args.shift
+        end
+      end
+
+      abort "Need to provide user, -u <username>" if user_arg.nil?
+
+      base_project = local_repo.main_project
+      show_issues(:user => user_arg, :project => base_project).each do |issue|
+        puts "%3d. %s" % [ issue["number"], issue["title"]]
+      end
+      exit
+    end
+
+    # $ hub feature-branch -u <owner> -i <issue number>
+    # > git checkout -b issue_<issue number>_<issue title>
+    def feature_branch(args)
+      user_arg, issue_num, postfix = nil, nil, nil
+      while arg = args.shift
+        case arg
+        when '-u' then user_arg = args.shift
+        when '-i' then issue_num = args.shift.to_i
+        when '-p' then postfix = args.shift
+        end
+      end
+
+      abort "Provide an issue number, -i <number>" if issue_num.nil?
+      abort "Need to provide user, -u <username>" if user_arg.nil?
+
+      base_project = local_repo.main_project
+
+      feature = show_issues(:user => user_arg, :project => base_project).select do |issue|
+        issue["number"] == issue_num
+      end.first
+
+      abort "No issue found" if feature.nil?
+      branchname = "issue_%d_%s%s" % [feature["number"],
+                                      feature["title"][0..30].
+                                      gsub(/[[:space:][:punct:]]/,'_'),
+                                      postfix.nil? ? "" : "_#{postfix}"]
+      `git checkout -b #{branchname}`
+      exit
+    end
+
   private
     #
     # Helper methods are private so they cannot be invoked
@@ -947,6 +999,18 @@ help
       JSON.parse(response.body)['pull']
     end
 
+    # Retrieve the issues for a repo. This requires a project and user
+    # Since the project is the fork and not the master, need the user
+    # option
+    def show_issues(options)
+      project = options.fetch(:project)
+      user = options.fetch(:user)
+      load_net_http
+      response = http_request(project.api_issues_show_url('json', user))
+      response.error! unless Net::HTTPSuccess === response
+      JSON.parse(response.body)["issues"]
+    end
+
     def pullrequest_editmsg(changes)
       message_file = File.join(git_dir, 'PULLREQ_EDITMSG')
       File.open(message_file, 'w') { |msg|
@@ -977,7 +1041,7 @@ help
       title.tr!("\n", ' ')
       title.strip!
       body.strip!
-      
+
       [title =~ /\S/ ? title : nil, body =~ /\S/ ? body : nil]
     end
 
