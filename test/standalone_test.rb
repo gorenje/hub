@@ -34,6 +34,29 @@ class StandaloneTest < Test::Unit::TestCase
     assert_equal File.read('man/hub.1'), $1
   end
 
+  def test_separated_commands_are_included
+    io = StringIO.new
+    Hub::Standalone.build io
+    standalone = io.string
+    %w(am
+       browse
+       checkout
+       cherry_pick
+       clone
+       compare
+       create
+       fetch
+       fork
+       hub
+       init
+       pull_request
+       push
+       remote
+       submodule).each do |command_name|
+      assert_includes "def #{command_name}", standalone, "Failed for #{command_name}"
+    end
+  end
+
   def test_standalone_save
     Hub::Standalone.save("hub")
     assert File.size('./hub') > 100
