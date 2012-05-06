@@ -1,4 +1,4 @@
-require 'helper'
+require_relative 'helper'
 require 'webmock/test_unit'
 require 'rbconfig'
 require 'yaml'

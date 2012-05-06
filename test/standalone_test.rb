@@ -1,4 +1,4 @@
-require 'helper'
+require_relative 'helper'
 require 'hub/standalone'
 require 'fileutils'
 require 'stringio'

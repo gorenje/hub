@@ -1,4 +1,4 @@
-require 'helper'
+require_relative 'helper'
 
 class AliasTest < Test::Unit::TestCase
   def test_alias_instructions
