@@ -14,6 +14,20 @@ module Hub
 
 preamble
 
+    LOOK_FOR_EXTENSIONS = <<-lookup_for_extensions
+begin
+  if cmddir = Hub::Context::GitReader.new.read_config("hub.commands")
+    cmddir = File.expand_path(cmddir)
+    if Dir.exists?(cmddir)
+      Dir["\#{File.expand_path(cmddir)}/*.rb"].each do |command_file|
+        require command_file
+      end
+    end
+  end
+rescue Exception => e ; end
+
+lookup_for_extensions
+
     def save(filename, path = '.')
       target = File.join(File.expand_path(path), filename)
       File.open(target, 'w') do |f|
@@ -33,6 +47,7 @@ preamble
         io.puts ''
       end
 
+      io << LOOK_FOR_EXTENSIONS
       io.puts "Hub::Runner.execute(*ARGV)"
       io.puts "\n__END__"
       io << File.read(File.join(HUB_ROOT, 'man/hub.1'))

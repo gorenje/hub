@@ -1,4 +1,4 @@
-require 'helper'
+require_relative 'helper'
 require 'hub/standalone'
 require 'fileutils'
 require 'stringio'
@@ -29,7 +29,18 @@ class StandaloneTest < Test::Unit::TestCase
     assert_includes "Commands", standalone
     assert_includes ".execute(*ARGV)", standalone
     assert_not_includes "module Standalone", standalone
-
+    assert_includes(<<-EOF,standalone)
+begin
+  if cmddir = Hub::Context::GitReader.new.read_config("hub.commands")
+    cmddir = File.expand_path(cmddir)
+    if Dir.exists?(cmddir)
+      Dir["\#{File.expand_path(cmddir)}/*.rb"].each do |command_file|
+        require command_file
+      end
+    end
+  end
+rescue Exception => e ; end
+EOF
     standalone =~ /__END__\s*(.+)/m
     assert_equal File.read('man/hub.1'), $1
   end
