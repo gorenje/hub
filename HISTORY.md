@@ -1,3 +1,21 @@
+## 1.10.1 (2012-05-28)
+
+* don't choke on empty config file
+* fix `browse` when not in git repo
+
+## 1.10.0 (2012-05-08)
+
+* improve improved help text
+* fix GitHub username prompt in `create` command
+* make `fetch` command work with private repos too
+* add `merge` command to merge pull requests
+
+## 1.9.0 (2012-05-04)
+
+* internal refactoring and code reorganization
+* switch to GitHub API v3 and authenticate via OAuth
+* auth info is now stored in ~/.config/hub instead of ~/.gitconfig
+
 ## 1.8.4 (2012-03-20)
 
 * add bash, zsh completion
